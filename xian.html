@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>西安五日游·语音导览</title>
+  <!-- Tailwind CSS -->
+  <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-100-M/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- 中文字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Alpine.js -->
+  <script defer src="https://unpkg.com/alpinejs@3.10.5/dist/cdn.min.js"></script>
+  <style>
+    body {
+      font-family: 'Noto Serif SC', 'Noto Sans SC', SimSun, serif;
+      background: #f8f5e6 url('https://img.alicdn.com/imgextra/i3/6000000000422/O1CN01QwQwQd1QwQwQwQwQw_!!6000000000422-2-tps-1920-1080.png') repeat;
+      color: #4b3a1e;
+    }
+    .antique-title {
+      font-family: 'Noto Serif SC', SimSun, serif;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      font-size: 2rem;
+      color: #7c5c27;
+      border-bottom: 2px solid #cbb994;
+      display: inline-block;
+      padding-bottom: 0.25em;
+      margin-bottom: 0.5em;
+    }
+    .ink-divider {
+      width: 100%;
+      height: 24px;
+      background: url('https://img.alicdn.com/imgextra/i2/6000000000422/O1CN01QwQwQd1QwQwQwQwQw_!!6000000000422-2-tps-1920-1080.png') repeat-x;
+      background-size: contain;
+      margin: 1.5em 0;
+      opacity: 0.2;
+    }
+    .scenic-card {
+      background: rgba(255, 255, 240, 0.95);
+      border: 1px solid #e5dec7;
+      border-radius: 0.75em;
+      box-shadow: 0 2px 8px 0 rgba(200,180,120,0.08);
+      margin-bottom: 1.5em;
+      padding: 1.2em 1em;
+    }
+    .scenic-title {
+      font-family: 'Noto Serif SC', SimSun, serif;
+      font-size: 1.2rem;
+      color: #7c5c27;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .audio-btn {
+      color: #b08d57;
+      font-size: 1.3em;
+      margin-left: 0.5em;
+      cursor: pointer;
+    }
+    .audio-btn.active {
+      color: #e09e3e;
+    }
+    .desc {
+      font-size: 1rem;
+      color: #4b3a1e;
+      margin-top: 0.7em;
+      line-height: 1.7;
+      font-family: 'Noto Serif SC', SimSun, serif;
+    }
+    .tips {
+      background: #f3e9d7;
+      border-left: 4px solid #b08d57;
+      padding: 1em;
+      margin: 1.5em 0;
+      border-radius: 0.5em;
+      color: #7c5c27;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center px-2 pb-8">
+  <header class="w-full max-w-xl mx-auto text-center mt-6 mb-2">
+    <div class="antique-title">西安五日游 · 语音导览</div>
+    <div class="ink-divider"></div>
+    <div class="text-base text-gray-700 mt-2 mb-4" style="font-family:'Noto Serif SC',SimSun,serif;">“长安自古帝王都”，西安，这座承载了十三朝风雨的古城，不仅有深厚的历史底蕴，还有令人垂涎的美食。让我们跟随语音导览，穿越古今，感受历史与现代的碰撞。</div>
+  </header>
+  <main class="w-full max-w-xl mx-auto" x-data="scenicAudioGuide()">
+    <!-- 景区列表 -->
+    <template x-for="(day, idx) in days" :key="idx">
+      <section class="scenic-card">
+        <div class="scenic-title" @click="toggle(idx)">
+          <i class="fa-solid fa-mountain-sun"></i>
+          <span x-text="day.title"></span>
+          <i class="fa-solid" :class="openIdx===idx ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+        <div x-show="openIdx===idx" x-transition>
+          <template x-for="(scenic, sidx) in day.scenics" :key="sidx">
+            <div class="mt-3 mb-2">
+              <div class="flex items-center">
+                <span class="font-semibold" x-text="scenic.name"></span>
+                <button class="audio-btn" :class="audioPlaying===scenic.audio ? 'active' : ''" @click.stop="playAudio(scenic.audio)">
+                  <i :class="audioPlaying===scenic.audio ? 'fa-pause-circle' : 'fa-play-circle'"></i>
+                </button>
+              </div>
+              <div class="desc" x-text="scenic.desc"></div>
+            </div>
+          </template>
+        </div>
+      </section>
+    </template>
+    <div class="ink-divider"></div>
+    <div class="tips">
+      <div class="font-bold mb-1">温馨提示</div>
+      <ul class="list-disc pl-5">
+        <li>西安气候干燥，请注意保湿补水。</li>
+        <li>热门景点门票和演出建议提前在线预订，尤其是节假日。</li>
+        <li>城市交通便利，地铁和公交可覆盖大部分景点。</li>
+        <li>品尝美食时，可多家对比，选择自己喜欢的口味。</li>
+      </ul>
+    </div>
+  </main>
+  <audio id="audioPlayer" preload="none"></audio>
+  <script>
+    function scenicAudioGuide() {
+      return {
+        openIdx: null,
+        audioPlaying: null,
+        audioEl: null,
+        days: [
+          {
+            title: '第一天：初抵长安，梦回大秦',
+            scenics: [
+              {
+                name: '秦始皇兵马俑博物馆',
+                audio: 'https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/audio%2Feffect%2F04e3c988364c63283f5cb6fb052b61af.mp3?Expires=1754655435&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=D4dJ%2F8fH2p5xO%2FfP6yJ%2BzjXj%2B1A%3D',
+                desc: '世界第八大奇迹，秦始皇陵的守护者，感受大秦帝国的恢宏气势。'
+              },
+              {
+                name: '华清宫',
+                audio: 'https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/audio%2Feffect%2F04e3cb3c2cb4e60124ad18265074ceea.mp3?Expires=1754655646&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=RgygJ7QeOD%2F7A8YqX%2Bo8sL4Y82c%3D',
+                desc: '唐玄宗与杨贵妃的爱情见证地，夜观《长恨歌》实景演出，梦回盛唐。'
+              }
+            ]
+          },
+          {
+            title: '第二天：古城墙韵，雁塔晨钟',
+            scenics: [
+              {
+                name: '西安城墙',
+                audio: 'https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/audio%2Feffect%2F04e3cae6a394336fbf188045622b37c0.mp3?Expires=1754655593&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=SMMbTjV1dE1N8P0jK%2F5gD2s1%2BqU%3D',
+                desc: '中国现存最完整的古代城垣，骑行或漫步，感受历史的厚重。'
+              },
+              {
+                name: '大雁塔',
+                audio: 'https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/audio%2Feffect%2F04e3ca319eb38c82a20e9803096058d1.mp3?Expires=1754655476&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=gQ51G0k2L2j2dF%2Bv0o%2Fd%2F8iXzG8%3D',
+                desc: '玄奘法师译经地，佛教文化圣地，登塔远眺古都风貌。'
+              },
+              {
+                name: '大唐不夜城',
+                audio: 'https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/audio%2Feffect%2F04e3ce6dd24f1a636469840bd0d9c474.mp3?Expires=1754655984&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=FvFY3mfO5PnP08WHThuFgBEeGOo%3D',
+                desc: '夜色璀璨，灯光与表演交织，感受盛唐繁华。'
+              }
+            ]
+          },
+          {
+            title: '第三天：汉风古韵，美食寻踪',
+            scenics: [
+              {
+                name: '汉城湖旅游风景区',
+                audio: 'https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/audio%2Feffect%2F04e3ce5fe158fefa1804025fb93cb2e5.mp3?Expires=1754655970&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=oAmgHh6oeRuOcb%2FrYqjgMgTUumw%3D',
+                desc: '汉代文化的博大精深，湖光山色间品味历史。'
+              },
+              {
+                name: '回民街',
+                audio: 'https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/audio%2Feffect%2F04e3cfab816c70bed73587b14d2389d4.mp3?Expires=1754656206&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=%2BOY356pBH0NlHzYjY8zUaQYhFjM%3D',
+                desc: '西安美食地标，肉夹馍、羊肉泡馍等地道小吃不容错过。'
+              },
+              {
+                name: '永兴坊',
+                audio: 'https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/audio%2Feffect%2F04e3cfb712fa619b02a7b1b017fbb3c7.mp3?Expires=1754656218&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=6l1JjNlK6l1jFf1sH9%2B02P0s5bY%3D',
+                desc: '非遗美食、摔碗酒，体验地道西安风情。'
+              }
+            ]
+          },
+          {
+            title: '第四天：历史拾遗，自由探索',
+            scenics: [
+              {
+                name: '陕西历史博物馆',
+                audio: '',
+                desc: '周秦汉唐文物荟萃，深入了解陕西辉煌历史。'
+              },
+              {
+                name: '书院门文化街/大唐西市',
+                audio: '',
+                desc: '自由活动，体验传统文化与丝路风情。'
+              }
+            ]
+          },
+          {
+            title: '第五天：告别古都，满载而归',
+            scenics: [
+              {
+                name: '特产购物',
+                audio: '',
+                desc: '整理行装，购买水晶饼、石榴等西安特产，满载而归。'
+              }
+            ]
+          }
+        ],
+        toggle(idx) {
+          this.openIdx = this.openIdx === idx ? null : idx;
+        },
+        playAudio(url) {
+          if (!url) return;
+          if (!this.audioEl) {
+            this.audioEl = document.getElementById('audioPlayer');
+            this.audioEl.addEventListener('ended', () => {
+              this.audioPlaying = null;
+            });
+          }
+          if (this.audioPlaying === url) {
+            if (!this.audioEl.paused) {
+              this.audioEl.pause();
+            } else {
+              this.audioEl.play();
+            }
+          } else {
+            this.audioEl.src = url;
+            this.audioEl.play();
+            this.audioPlaying = url;
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
